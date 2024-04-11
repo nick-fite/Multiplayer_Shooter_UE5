@@ -19,8 +19,10 @@ APlayerCharacter::APlayerCharacter()
 	CameraBoom->SetupAttachment(GetRootComponent());
 	ViewCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 
+	CameraBoom->UnfixedCameraPosition = FVector(0, 20, 50);
+	
 	CameraBoom->bUsePawnControlRotation = true;
-	CameraBoom->TargetArmLength = 800.f;
+	CameraBoom->TargetArmLength = 200.f;
 	bUseControllerRotationYaw = false;
 	
 	GetCharacterMovement()->bOrientRotationToMovement = true;
