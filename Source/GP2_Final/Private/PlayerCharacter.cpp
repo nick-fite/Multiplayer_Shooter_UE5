@@ -16,7 +16,7 @@ APlayerCharacter::APlayerCharacter()
 {
 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 
-	CameraBoom = CreateDefaultSubobject<USpringArmComponent>("Camera Boom");
+	CameraBoom =  CreateDefaultSubobject<USpringArmComponent>("Camera Boom");
 	ViewCamera = CreateDefaultSubobject<UCameraComponent>("View Camera");
 
 	CameraBoom->SetupAttachment(GetRootComponent());
@@ -62,10 +62,10 @@ void APlayerCharacter::BeginPlay()
 
 	if(CrosshairToSpawn)
 	{
-		SpawnedCrosshair = CreateWidget<UCrosshair>(this, CrosshairToSpawn);	
+		SpawnedCrosshair = CreateWidget<UCrosshair>(GetWorld(), CrosshairToSpawn);	
 		SpawnedCrosshair->AddToViewport(999);
 	}
-	
+
 	CameraBoom->SetRelativeLocation(SpringArmPosition);
 }
 
