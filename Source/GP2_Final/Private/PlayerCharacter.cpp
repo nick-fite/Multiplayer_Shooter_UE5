@@ -62,7 +62,7 @@ void APlayerCharacter::BeginPlay()
 
 	if(CrosshairToSpawn)
 	{
-		SpawnedCrosshair = CreateWidget<UCrosshair>(this, UCrosshair::StaticClass());	
+		SpawnedCrosshair = CreateWidget<UCrosshair>(this, CrosshairToSpawn);	
 		SpawnedCrosshair->AddToViewport(999);
 	}
 	
