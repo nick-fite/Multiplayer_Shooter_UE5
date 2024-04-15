@@ -6,6 +6,7 @@
 #include "GameFramework/Character.h"
 #include "PlayerCharacter.generated.h"
 
+class AWeapon;
 class UCameraComponent;
 class USpringArmComponent;
 struct FInputActionValue;
@@ -49,5 +50,9 @@ private:
 	UPROPERTY(EditAnywhere, category="Input") UInputAction* JumpAction;
 	UPROPERTY(EditAnywhere, category="Input") UInputAction* LookAction;
 	UPROPERTY(EditAnywhere, Category = "Input") float LookSensitivity {0.5f};
+
+	UPROPERTY(EditAnywhere, Category="Weapon") TSubclassOf<AWeapon> WeaponToSpawn;
+	UPROPERTY(EditAnywhere, Category="Weapon") AWeapon* SpawnedWeapon;
+	
 	
 };

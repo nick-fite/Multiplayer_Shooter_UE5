@@ -8,6 +8,7 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Weapons/Weapon.h"
 
 // Sets default values
 APlayerCharacter::APlayerCharacter()
@@ -44,6 +45,17 @@ void APlayerCharacter::BeginPlay()
 			subsystem->AddMappingContext(MappingContext,0);
 		}
 	}
+
+	if(WeaponToSpawn)
+	{
+
+		const FRotator socketRotate = GetMesh()->GetSocketRotation("hand_r_weapon_socket");
+		const FVector SocketLoc = GetMesh()->GetSocketLocation("hand_r_weapon_socket");
+
+		SpawnedWeapon = GetWorld()->SpawnActor<AWeapon>(WeaponToSpawn, SocketLoc, socketRotate);
+		SpawnedWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale,"hand_r_weapon_socket");
+	}
+	
 }
 
 // Called every frame
@@ -95,4 +107,3 @@ FVector APlayerCharacter::GetMoveRightDir() const
 {
 	return ViewCamera->GetRightVector();
 }
-
