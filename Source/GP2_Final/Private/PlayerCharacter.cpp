@@ -8,6 +8,7 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "hud/Crosshair.h"
 #include "Weapons/Weapon.h"
 
 // Sets default values
@@ -21,7 +22,10 @@ APlayerCharacter::APlayerCharacter()
 	CameraBoom->SetupAttachment(GetRootComponent());
 	ViewCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 
-	CameraBoom->UnfixedCameraPosition = FVector(0, 20, 50);
+	//FVector currentCamLoc = CameraBoom->GetComponentLocation();
+	//FVector output;
+	//FMath::Lerp(currentCamLoc, SpringArmPosition, output);
+	CameraBoom->SetRelativeLocation(SpringArmPosition);
 	
 	CameraBoom->bUsePawnControlRotation = true;
 	CameraBoom->TargetArmLength = 200.f;
@@ -55,7 +59,14 @@ void APlayerCharacter::BeginPlay()
 		SpawnedWeapon = GetWorld()->SpawnActor<AWeapon>(WeaponToSpawn, SocketLoc, socketRotate);
 		SpawnedWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale,"hand_r_weapon_socket");
 	}
+
+	if(CrosshairToSpawn)
+	{
+		SpawnedCrosshair = CreateWidget<UCrosshair>(this, UCrosshair::StaticClass());	
+		SpawnedCrosshair->AddToViewport(999);
+	}
 	
+	CameraBoom->SetRelativeLocation(SpringArmPosition);
 }
 
 // Called every frame

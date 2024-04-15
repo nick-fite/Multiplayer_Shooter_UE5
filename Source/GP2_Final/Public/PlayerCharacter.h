@@ -6,6 +6,7 @@
 #include "GameFramework/Character.h"
 #include "PlayerCharacter.generated.h"
 
+class UCrosshair;
 class AWeapon;
 class UCameraComponent;
 class USpringArmComponent;
@@ -43,7 +44,7 @@ private:
 	//camera
 	UPROPERTY(VisibleAnywhere, Category="View") USpringArmComponent* CameraBoom;
 	UPROPERTY(VisibleAnywhere, Category="View") UCameraComponent* ViewCamera;
-
+	UPROPERTY(EditAnywhere, Category="View") FVector SpringArmPosition;	
 
 	UPROPERTY(EditAnywhere, Category = "Input") UInputMappingContext* MappingContext;
 	UPROPERTY(EditAnywhere, category="Input") UInputAction* MoveAction;
@@ -53,6 +54,9 @@ private:
 
 	UPROPERTY(EditAnywhere, Category="Weapon") TSubclassOf<AWeapon> WeaponToSpawn;
 	UPROPERTY(EditAnywhere, Category="Weapon") AWeapon* SpawnedWeapon;
-	
+
+
+	UPROPERTY(EditAnywhere, Category="Weapon") TSubclassOf<UCrosshair> CrosshairToSpawn;
+	UPROPERTY(EditAnywhere, Category="Weapon") UCrosshair* SpawnedCrosshair;
 	
 };
