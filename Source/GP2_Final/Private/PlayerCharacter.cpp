@@ -9,6 +9,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "hud/Crosshair.h"
+#include "Kismet/KismetMathLibrary.h"
 #include "Weapons/Weapon.h"
 
 // Sets default values
@@ -74,6 +75,15 @@ void APlayerCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	if(bIsADS)
+	{
+		FHitResult hit;
+		GetWorld()->LineTraceSingleByChannel(hit, ViewCamera->GetComponentLocation(), ViewCamera->GetComponentLocation() + ViewCamera->GetForwardVector() * 1000, ECC_Camera);
+		if(hit.bBlockingHit)
+		{
+		}
+	}
+	
 }
 
 // Called to bind functionality to input
@@ -87,6 +97,9 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 		enhancedInputComp->BindAction(LookAction, ETriggerEvent::Triggered, this, &APlayerCharacter::Look);
 		enhancedInputComp->BindAction(JumpAction, ETriggerEvent::Triggered, this, &APlayerCharacter::Jump);
 		
+		enhancedInputComp->BindAction(ShootAction, ETriggerEvent::Triggered, this, &APlayerCharacter::Shoot);
+		enhancedInputComp->BindAction(ADSAction, ETriggerEvent::Triggered, this, &APlayerCharacter::ADS);
+		enhancedInputComp->BindAction(ADSAction, ETriggerEvent::Canceled, this, &APlayerCharacter::CancelADS);
 	}
 }
 
@@ -117,4 +130,28 @@ FVector APlayerCharacter::GetMoveForwardDir() const
 FVector APlayerCharacter::GetMoveRightDir() const
 {
 	return ViewCamera->GetRightVector();
+}
+
+void APlayerCharacter::ADS(const FInputActionValue& InputValue)
+{
+	bIsADS = InputValue.Get<bool>();
+	bUseControllerRotationYaw = true;
+	if (bIsADS)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("true"));
+	}
+}
+
+void APlayerCharacter::CancelADS(const FInputActionValue& InputValue)
+{
+	bIsADS = false;
+	bUseControllerRotationYaw = false;
+	if (!bIsADS)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("False"));
+	}
+}
+
+void APlayerCharacter::Shoot(const FInputActionValue& InputValue)
+{
 }

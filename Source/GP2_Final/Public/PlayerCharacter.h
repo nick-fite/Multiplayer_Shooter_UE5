@@ -40,6 +40,10 @@ private:
 
 	UFUNCTION() FVector GetMoveForwardDir() const;
 	UFUNCTION() FVector GetMoveRightDir() const;
+
+	UFUNCTION() void ADS(const FInputActionValue& InputValue);
+	UFUNCTION() void CancelADS(const FInputActionValue& InputValue);
+	UFUNCTION() void Shoot(const FInputActionValue& InputValue);
 	
 	//camera
 	UPROPERTY(VisibleAnywhere, Category="View") USpringArmComponent* CameraBoom;
@@ -50,13 +54,15 @@ private:
 	UPROPERTY(EditAnywhere, category="Input") UInputAction* MoveAction;
 	UPROPERTY(EditAnywhere, category="Input") UInputAction* JumpAction;
 	UPROPERTY(EditAnywhere, category="Input") UInputAction* LookAction;
+	UPROPERTY(EditAnywhere, Category="Input") UInputAction* ADSAction;
+	UPROPERTY(EditAnywhere, Category="Input") UInputAction* ShootAction;
 	UPROPERTY(EditAnywhere, Category = "Input") float LookSensitivity {0.5f};
 
 	UPROPERTY(EditAnywhere, Category="Weapon") TSubclassOf<AWeapon> WeaponToSpawn;
 	UPROPERTY(EditAnywhere, Category="Weapon") AWeapon* SpawnedWeapon;
 
-
 	UPROPERTY(EditAnywhere, Category="Weapon") TSubclassOf<UCrosshair> CrosshairToSpawn;
 	UPROPERTY(EditAnywhere, Category="Weapon") UCrosshair* SpawnedCrosshair;
-	
+public:
+	UPROPERTY(EditAnywhere,BlueprintReadWrite) bool bIsADS;
 };
