@@ -42,7 +42,6 @@ private:
 	UFUNCTION() FVector GetMoveRightDir() const;
 
 	UFUNCTION() void ADS(const FInputActionValue& InputValue);
-	UFUNCTION() void CancelADS(const FInputActionValue& InputValue);
 	UFUNCTION() void Shoot(const FInputActionValue& InputValue);
 	
 	//camera
@@ -63,6 +62,9 @@ private:
 
 	UPROPERTY(EditAnywhere, Category="Weapon") TSubclassOf<UCrosshair> CrosshairToSpawn;
 	UPROPERTY(EditAnywhere, Category="Weapon") UCrosshair* SpawnedCrosshair;
+
+	UPROPERTY(EditAnywhere, Category="Animations") UAnimMontage* PlayerPistolShoot;
+	UPROPERTY(EditAnywhere, Category="animations") UAnimMontage* PistolShoot;
 public:
 	UPROPERTY(EditAnywhere,BlueprintReadWrite) bool bIsADS;
 };

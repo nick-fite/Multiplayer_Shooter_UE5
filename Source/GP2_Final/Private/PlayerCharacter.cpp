@@ -7,6 +7,7 @@
 #include "camera/CameraComponent.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "Components/ArrowComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "hud/Crosshair.h"
 #include "Kismet/KismetMathLibrary.h"
@@ -59,6 +60,7 @@ void APlayerCharacter::BeginPlay()
 
 		SpawnedWeapon = GetWorld()->SpawnActor<AWeapon>(WeaponToSpawn, SocketLoc, socketRotate);
 		SpawnedWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale,"hand_r_weapon_socket");
+		SpawnedWeapon->SetPlayerSkeletalMesh(GetMesh());
 	}
 
 	if(CrosshairToSpawn)
@@ -77,10 +79,20 @@ void APlayerCharacter::Tick(float DeltaTime)
 
 	if(bIsADS)
 	{
-		FHitResult hit;
-		GetWorld()->LineTraceSingleByChannel(hit, ViewCamera->GetComponentLocation(), ViewCamera->GetComponentLocation() + ViewCamera->GetForwardVector() * 1000, ECC_Camera);
-		if(hit.bBlockingHit)
+		if(APlayerController* playerController = Cast<APlayerController>(GetController()))
 		{
+			int viewportX, viewportY;
+			playerController->GetViewportSize(viewportX, viewportY);
+
+			FVector worldLoc, worldDir;
+			playerController->DeprojectScreenPositionToWorld(viewportX * 0.5f, viewportY * 0.5f, worldLoc, worldDir);
+
+			worldLoc += worldDir * 100.0;
+			FVector endPos = worldLoc + worldDir * 999.f;
+
+			FRotator newRot = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), endPos);
+
+			this->SetActorRotation(FRotator(GetActorRotation().Pitch, newRot.Yaw + 20, GetActorRotation().Roll));
 		}
 	}
 	
@@ -99,7 +111,6 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 		
 		enhancedInputComp->BindAction(ShootAction, ETriggerEvent::Triggered, this, &APlayerCharacter::Shoot);
 		enhancedInputComp->BindAction(ADSAction, ETriggerEvent::Triggered, this, &APlayerCharacter::ADS);
-		enhancedInputComp->BindAction(ADSAction, ETriggerEvent::Canceled, this, &APlayerCharacter::CancelADS);
 	}
 }
 
@@ -140,18 +151,14 @@ void APlayerCharacter::ADS(const FInputActionValue& InputValue)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("true"));
 	}
-}
-
-void APlayerCharacter::CancelADS(const FInputActionValue& InputValue)
-{
-	bIsADS = false;
-	bUseControllerRotationYaw = false;
-	if (!bIsADS)
+	else
 	{
 		UE_LOG(LogTemp, Warning, TEXT("False"));
 	}
 }
 
+
 void APlayerCharacter::Shoot(const FInputActionValue& InputValue)
 {
+	SpawnedWeapon->PlayShootAnim();
 }

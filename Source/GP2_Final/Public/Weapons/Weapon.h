@@ -23,5 +23,20 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	UPROPERTY(EditAnywhere) USkeletalMesh* SkeletalMesh;
+	UFUNCTION()
+	void SetPlayerSkeletalMesh(USkeletalMeshComponent* mesh)
+	{
+		playerMesh = mesh; 
+	}
+
+	UFUNCTION(BlueprintCallable) void PlayShootAnim();
+
+	
+private:	
+	UPROPERTY(EditAnywhere) USkeletalMeshComponent* playerMesh;
+	UPROPERTY(EditAnywhere) USkeletalMeshComponent* SkeletalMesh;
+	UPROPERTY(EditAnywhere, Category="Animations") UAnimMontage* PlayerShootAnim;
+	UPROPERTY(EditAnywhere, Category="Animations") UAnimMontage* WeaponShootAnim;
+	UPROPERTY(EditAnywhere, Category="Animations") UAnimMontage* WeaponReloadAnim;
+	UPROPERTY(EditAnywhere, Category="Animations") UAnimMontage* PlayerReloadAnim;
 };
