@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "InputActionValue.h"
 #include "GameFramework/Character.h"
 #include "PlayerCharacter.generated.h"
 
@@ -43,7 +44,8 @@ private:
 
 	UFUNCTION() void ADS(const FInputActionValue& InputValue);
 	UFUNCTION() void Shoot(const FInputActionValue& InputValue);
-	
+	UFUNCTION() void Sprint(const FInputActionValue& InputValue);
+
 	//camera
 	UPROPERTY(VisibleAnywhere, Category="View") USpringArmComponent* CameraBoom;
 	UPROPERTY(VisibleAnywhere, Category="View") UCameraComponent* ViewCamera;
@@ -51,7 +53,10 @@ private:
 
 	UPROPERTY(EditAnywhere, Category = "Input") UInputMappingContext* MappingContext;
 	UPROPERTY(EditAnywhere, category="Input") UInputAction* MoveAction;
+	UPROPERTY(EditAnywhere, Category="Input") UInputAction* SprintAction;
 	UPROPERTY(EditAnywhere, category="Input") UInputAction* JumpAction;
+	UPROPERTY(EditAnywhere, Category="Input") bool bIsSprinting;
+	
 	UPROPERTY(EditAnywhere, category="Input") UInputAction* LookAction;
 	UPROPERTY(EditAnywhere, Category="Input") UInputAction* ADSAction;
 	UPROPERTY(EditAnywhere, Category="Input") UInputAction* ShootAction;
@@ -67,4 +72,6 @@ private:
 	UPROPERTY(EditAnywhere, Category="animations") UAnimMontage* PistolShoot;
 public:
 	UPROPERTY(EditAnywhere,BlueprintReadWrite) bool bIsADS;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite) float SideInput;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite) float ForwardInput;
 };

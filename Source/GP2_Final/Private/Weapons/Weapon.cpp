@@ -3,6 +3,8 @@
 
 #include "Weapons/Weapon.h"
 
+#include "PlayerCharacter.h"
+
 // Sets default values
 AWeapon::AWeapon()
 {
@@ -24,12 +26,32 @@ void AWeapon::BeginPlay()
 void AWeapon::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
 }
 
 void AWeapon::PlayShootAnim()
 {
-	SkeletalMesh->GetAnimInstance()->Montage_Play(WeaponShootAnim);
-	playerMesh->GetAnimInstance()->Montage_Play(PlayerShootAnim);
+	if(!SkeletalMesh->GetAnimInstance()->Montage_IsPlaying(nullptr))
+	{
+		SkeletalMesh->GetAnimInstance()->Montage_Play(WeaponShootAnim);
+		Player->GetMesh()->GetAnimInstance()->Montage_Play(PlayerShootAnim);
+
+		if(APlayerController* playerController = Cast<APlayerController>(Player->GetController()))
+		{
+			UE_LOG(LogTemp, Warning, TEXT("working"));
+			int viewportX, viewportY;
+			playerController->GetViewportSize(viewportX, viewportY);
+
+			FVector worldLoc, worldDir;
+			playerController->DeprojectScreenPositionToWorld(viewportX * 0.5f, viewportY * 0.5f, worldLoc, worldDir);
+
+			worldLoc += worldDir * 100.0;
+			FVector endPos = worldLoc + worldDir * 999.f;
+
+			DrawDebugLine(GetWorld(), SkeletalMesh->GetComponentLocation(), endPos, FColor::Green, true);
+			//FRotator newRot = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), endPos);
+
+			//this->SetActorRotation(FRotator(GetActorRotation().Pitch, newRot.Yaw + 20, GetActorRotation().Roll));
+		}
+	}
 }
 

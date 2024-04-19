@@ -6,6 +6,8 @@
 #include "GameFramework/Actor.h"
 #include "Weapon.generated.h"
 
+class APlayerCharacter;
+
 UCLASS()
 class GP2_FINAL_API AWeapon : public AActor
 {
@@ -24,16 +26,16 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	UFUNCTION()
-	void SetPlayerSkeletalMesh(USkeletalMeshComponent* mesh)
+	void SetPlayerSkeletalMesh(APlayerCharacter* PlayerCharacter)
 	{
-		playerMesh = mesh; 
+		Player = PlayerCharacter; 
 	}
 
 	UFUNCTION(BlueprintCallable) void PlayShootAnim();
 
 	
 private:	
-	UPROPERTY(EditAnywhere) USkeletalMeshComponent* playerMesh;
+	UPROPERTY(EditAnywhere) APlayerCharacter* Player;
 	UPROPERTY(EditAnywhere) USkeletalMeshComponent* SkeletalMesh;
 	UPROPERTY(EditAnywhere, Category="Animations") UAnimMontage* PlayerShootAnim;
 	UPROPERTY(EditAnywhere, Category="Animations") UAnimMontage* WeaponShootAnim;

@@ -7,10 +7,8 @@
 #include "camera/CameraComponent.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
-#include "Components/ArrowComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "hud/Crosshair.h"
-#include "Kismet/KismetMathLibrary.h"
 #include "Weapons/Weapon.h"
 
 // Sets default values
@@ -60,7 +58,7 @@ void APlayerCharacter::BeginPlay()
 
 		SpawnedWeapon = GetWorld()->SpawnActor<AWeapon>(WeaponToSpawn, SocketLoc, socketRotate);
 		SpawnedWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale,"hand_r_weapon_socket");
-		SpawnedWeapon->SetPlayerSkeletalMesh(GetMesh());
+		SpawnedWeapon->SetPlayerSkeletalMesh(this);
 	}
 
 	if(CrosshairToSpawn)
@@ -70,6 +68,8 @@ void APlayerCharacter::BeginPlay()
 	}
 
 	CameraBoom->SetRelativeLocation(SpringArmPosition);
+
+	bUseControllerRotationYaw = true;	
 }
 
 // Called every frame
@@ -79,7 +79,7 @@ void APlayerCharacter::Tick(float DeltaTime)
 
 	if(bIsADS)
 	{
-		if(APlayerController* playerController = Cast<APlayerController>(GetController()))
+	/*	if(APlayerController* playerController = Cast<APlayerController>(GetController()))
 		{
 			int viewportX, viewportY;
 			playerController->GetViewportSize(viewportX, viewportY);
@@ -93,7 +93,7 @@ void APlayerCharacter::Tick(float DeltaTime)
 			FRotator newRot = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), endPos);
 
 			this->SetActorRotation(FRotator(GetActorRotation().Pitch, newRot.Yaw + 20, GetActorRotation().Roll));
-		}
+		}*/
 	}
 	
 }
@@ -108,6 +108,7 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 		enhancedInputComp->BindAction(MoveAction, ETriggerEvent::Triggered, this, &APlayerCharacter::Move);
 		enhancedInputComp->BindAction(LookAction, ETriggerEvent::Triggered, this, &APlayerCharacter::Look);
 		enhancedInputComp->BindAction(JumpAction, ETriggerEvent::Triggered, this, &APlayerCharacter::Jump);
+		enhancedInputComp->BindAction(SprintAction, ETriggerEvent::Triggered, this, &APlayerCharacter::Sprint);
 		
 		enhancedInputComp->BindAction(ShootAction, ETriggerEvent::Triggered, this, &APlayerCharacter::Shoot);
 		enhancedInputComp->BindAction(ADSAction, ETriggerEvent::Triggered, this, &APlayerCharacter::ADS);
@@ -118,8 +119,17 @@ void APlayerCharacter::Move(const FInputActionValue& InputValue)
 {
 	FVector2D input = InputValue.Get<FVector2D>();
 	input.Normalize();
+
 	AddMovementInput(input.Y * GetMoveForwardDir() + input.X * GetMoveRightDir());
 
+	SideInput = input.X;
+	ForwardInput = input.Y;
+	if(bIsSprinting)
+	{
+		SideInput *= 2;
+		ForwardInput *= 2;
+	}
+	
 }
 
 void APlayerCharacter::Look(const FInputActionValue& InputValue)
@@ -146,14 +156,16 @@ FVector APlayerCharacter::GetMoveRightDir() const
 void APlayerCharacter::ADS(const FInputActionValue& InputValue)
 {
 	bIsADS = InputValue.Get<bool>();
-	bUseControllerRotationYaw = true;
+	
 	if (bIsADS)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("true"));
+		bIsSprinting = true;
+		UE_LOG(LogTemp, Warning, TEXT("ADS: true"));
 	}
 	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("False"));
+		bIsSprinting = false;
+		UE_LOG(LogTemp, Warning, TEXT("ADS: False"));
 	}
 }
 
@@ -161,4 +173,19 @@ void APlayerCharacter::ADS(const FInputActionValue& InputValue)
 void APlayerCharacter::Shoot(const FInputActionValue& InputValue)
 {
 	SpawnedWeapon->PlayShootAnim();
+}
+
+void APlayerCharacter::Sprint(const FInputActionValue& InputValue)
+{
+		bIsSprinting = InputValue.Get<bool>();
+		if(bIsSprinting)
+		{
+			SideInput *= 2;
+			ForwardInput *= 2;
+		}
+		else
+		{
+			SideInput /= 2;
+			ForwardInput /= 2;
+		}
 }
