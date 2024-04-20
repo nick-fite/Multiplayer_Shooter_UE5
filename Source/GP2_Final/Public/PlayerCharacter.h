@@ -7,6 +7,7 @@
 #include "GameFramework/Character.h"
 #include "PlayerCharacter.generated.h"
 
+class UDamageComponent;
 class UCrosshair;
 class AWeapon;
 class UCameraComponent;
@@ -44,6 +45,7 @@ private:
 
 	UFUNCTION() void ADS(const FInputActionValue& InputValue);
 	UFUNCTION() void Shoot(const FInputActionValue& InputValue);
+	UFUNCTION() void Reload(const FInputActionValue& inputValue);
 	UFUNCTION() void Sprint(const FInputActionValue& InputValue);
 
 	//camera
@@ -60,10 +62,11 @@ private:
 	UPROPERTY(EditAnywhere, category="Input") UInputAction* LookAction;
 	UPROPERTY(EditAnywhere, Category="Input") UInputAction* ADSAction;
 	UPROPERTY(EditAnywhere, Category="Input") UInputAction* ShootAction;
+	UPROPERTY(EditAnywhere, Category="Input") UInputAction* ReloadAction;
 	UPROPERTY(EditAnywhere, Category = "Input") float LookSensitivity {0.5f};
 
 	UPROPERTY(EditAnywhere, Category="Weapon") TSubclassOf<AWeapon> WeaponToSpawn;
-	UPROPERTY(EditAnywhere, Category="Weapon") AWeapon* SpawnedWeapon;
+	UPROPERTY(EditAnywhere, Category="Weapon") AWeapon* PlayerWeapon;
 
 	UPROPERTY(EditAnywhere, Category="Weapon") TSubclassOf<UCrosshair> CrosshairToSpawn;
 	UPROPERTY(EditAnywhere, Category="Weapon") UCrosshair* SpawnedCrosshair;
@@ -74,4 +77,6 @@ public:
 	UPROPERTY(EditAnywhere,BlueprintReadWrite) bool bIsADS;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite) float SideInput;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite) float ForwardInput;
+
+	UPROPERTY(EditAnywhere, Blueprintable) UDamageComponent* DamageComponent;
 };

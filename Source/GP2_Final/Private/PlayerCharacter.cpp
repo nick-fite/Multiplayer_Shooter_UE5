@@ -3,6 +3,7 @@
 
 #include "PlayerCharacter.h"
 
+#include "DamageComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "camera/CameraComponent.h"
 #include "EnhancedInputComponent.h"
@@ -35,6 +36,7 @@ APlayerCharacter::APlayerCharacter()
 	GetCharacterMovement()->RotationRate = FRotator(1080.f);
 	GetCharacterMovement()->JumpZVelocity = 400.f;
 
+	DamageComponent = CreateDefaultSubobject<UDamageComponent>("Damage Component");
 }
 
 // Called when the game starts or when spawned
@@ -56,9 +58,9 @@ void APlayerCharacter::BeginPlay()
 		const FRotator socketRotate = GetMesh()->GetSocketRotation("hand_r_weapon_socket");
 		const FVector SocketLoc = GetMesh()->GetSocketLocation("hand_r_weapon_socket");
 
-		SpawnedWeapon = GetWorld()->SpawnActor<AWeapon>(WeaponToSpawn, SocketLoc, socketRotate);
-		SpawnedWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale,"hand_r_weapon_socket");
-		SpawnedWeapon->SetPlayerSkeletalMesh(this);
+		PlayerWeapon = GetWorld()->SpawnActor<AWeapon>(WeaponToSpawn, SocketLoc, socketRotate);
+		PlayerWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale,"hand_r_weapon_socket");
+		PlayerWeapon->SetPlayerSkeletalMesh(this);
 	}
 
 	if(CrosshairToSpawn)
@@ -76,26 +78,6 @@ void APlayerCharacter::BeginPlay()
 void APlayerCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
-	if(bIsADS)
-	{
-	/*	if(APlayerController* playerController = Cast<APlayerController>(GetController()))
-		{
-			int viewportX, viewportY;
-			playerController->GetViewportSize(viewportX, viewportY);
-
-			FVector worldLoc, worldDir;
-			playerController->DeprojectScreenPositionToWorld(viewportX * 0.5f, viewportY * 0.5f, worldLoc, worldDir);
-
-			worldLoc += worldDir * 100.0;
-			FVector endPos = worldLoc + worldDir * 999.f;
-
-			FRotator newRot = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), endPos);
-
-			this->SetActorRotation(FRotator(GetActorRotation().Pitch, newRot.Yaw + 20, GetActorRotation().Roll));
-		}*/
-	}
-	
 }
 
 // Called to bind functionality to input
@@ -112,6 +94,7 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 		
 		enhancedInputComp->BindAction(ShootAction, ETriggerEvent::Triggered, this, &APlayerCharacter::Shoot);
 		enhancedInputComp->BindAction(ADSAction, ETriggerEvent::Triggered, this, &APlayerCharacter::ADS);
+		enhancedInputComp->BindAction(ReloadAction, ETriggerEvent::Triggered, this, &APlayerCharacter::Reload);
 	}
 }
 
@@ -172,7 +155,12 @@ void APlayerCharacter::ADS(const FInputActionValue& InputValue)
 
 void APlayerCharacter::Shoot(const FInputActionValue& InputValue)
 {
-	SpawnedWeapon->PlayShootAnim();
+	PlayerWeapon->Shoot();
+}
+
+void APlayerCharacter::Reload(const FInputActionValue& inputValue)
+{
+	PlayerWeapon->Reload();
 }
 
 void APlayerCharacter::Sprint(const FInputActionValue& InputValue)
