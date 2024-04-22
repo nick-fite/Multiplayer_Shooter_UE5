@@ -8,6 +8,10 @@
 #include "Weapon.generated.h"
 
 
+
+UDELEGATE()
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FReloadDelegate);
+
 class APlayerCharacter;
 
 UCLASS()
@@ -35,6 +39,8 @@ public:
 
 	UFUNCTION(BlueprintCallable) void Shoot();
 	UFUNCTION(BlueprintCallable) void Reload();
+	UFUNCTION(BlueprintCallable) int GetCurrentAmmo(){ return Ammo; }
+	UFUNCTION(BlueprintCallable) int GetDefaultAmmo() {return DefaultAmmo; }
 	
 	UPROPERTY(EditAnywhere) UNiagaraComponent* Emitter;
 private:	
@@ -47,4 +53,5 @@ private:
 	UPROPERTY(EditAnywhere, Category="Weapon Stats") int Damage {10};
 	UPROPERTY(EditAnywhere, Category="Weapon Stats") int DefaultAmmo {20};
 	UPROPERTY(EditAnywhere, Category="Weapon Stats") int Ammo {20};
+	UPROPERTY(BlueprintAssignable) FReloadDelegate ReloadDelegate;
 };

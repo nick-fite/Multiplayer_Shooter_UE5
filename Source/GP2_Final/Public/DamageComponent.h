@@ -6,7 +6,6 @@
 #include "Components/ActorComponent.h"
 #include "DamageComponent.generated.h"
 
-
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class GP2_FINAL_API UDamageComponent : public UActorComponent
 {

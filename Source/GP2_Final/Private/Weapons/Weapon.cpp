@@ -53,7 +53,7 @@ void AWeapon::Shoot()
 			UE_LOG(LogTemp, Warning, TEXT("working"));
 			int viewportX, viewportY;
 			playerController->GetViewportSize(viewportX, viewportY);
-
+			
 			FVector worldLoc, worldDir;
 			playerController->DeprojectScreenPositionToWorld(viewportX * 0.5f, viewportY * 0.5f, worldLoc, worldDir);
 
@@ -73,6 +73,7 @@ void AWeapon::Shoot()
 				{
 					player->DamageComponent->Kill();
 				}
+				player->PrintWasHit();
 			}
 		}
 	}
@@ -86,6 +87,7 @@ void AWeapon::Reload()
 		SkeletalMesh->GetAnimInstance()->Montage_Play(WeaponReloadAnim);
 		Player->GetMesh()->GetAnimInstance()->Montage_Play(PlayerReloadAnim);
 		Ammo = DefaultAmmo;
+		ReloadDelegate.Broadcast();
 	//}
 }
 

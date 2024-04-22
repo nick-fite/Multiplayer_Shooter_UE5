@@ -16,6 +16,7 @@ struct FInputActionValue;
 class UInputMappingContext;
 class UInputAction;
 
+
 UCLASS()
 class GP2_FINAL_API APlayerCharacter : public ACharacter
 {
@@ -66,7 +67,6 @@ private:
 	UPROPERTY(EditAnywhere, Category = "Input") float LookSensitivity {0.5f};
 
 	UPROPERTY(EditAnywhere, Category="Weapon") TSubclassOf<AWeapon> WeaponToSpawn;
-	UPROPERTY(EditAnywhere, Category="Weapon") AWeapon* PlayerWeapon;
 
 	UPROPERTY(EditAnywhere, Category="Weapon") TSubclassOf<UCrosshair> CrosshairToSpawn;
 	UPROPERTY(EditAnywhere, Category="Weapon") UCrosshair* SpawnedCrosshair;
@@ -74,9 +74,20 @@ private:
 	UPROPERTY(EditAnywhere, Category="Animations") UAnimMontage* PlayerPistolShoot;
 	UPROPERTY(EditAnywhere, Category="animations") UAnimMontage* PistolShoot;
 public:
+
 	UPROPERTY(EditAnywhere,BlueprintReadWrite) bool bIsADS;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite) float SideInput;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite) float ForwardInput;
 
 	UPROPERTY(EditAnywhere, Blueprintable) UDamageComponent* DamageComponent;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Weapon") AWeapon* PlayerWeapon;
+
+	UFUNCTION() void PrintWasHit()
+	{
+		UE_LOG(LogTemp, Warning, TEXT("%s"), *this->GetName());
+		UE_LOG(LogTemp, Warning, TEXT("was hit"));
+	}
+protected:
+	
 };

@@ -67,6 +67,7 @@ void APlayerCharacter::BeginPlay()
 	{
 		SpawnedCrosshair = CreateWidget<UCrosshair>(GetWorld(), CrosshairToSpawn);	
 		SpawnedCrosshair->AddToViewport(999);
+		SpawnedCrosshair->AttachedPlayer = this;
 	}
 
 	CameraBoom->SetRelativeLocation(SpringArmPosition);
