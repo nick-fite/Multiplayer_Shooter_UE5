@@ -41,15 +41,17 @@ public:
 	UFUNCTION(BlueprintCallable) void Reload();
 	UFUNCTION(BlueprintCallable) int GetCurrentAmmo(){ return Ammo; }
 	UFUNCTION(BlueprintCallable) int GetDefaultAmmo() {return DefaultAmmo; }
+
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	
 	UPROPERTY(EditAnywhere) UNiagaraComponent* Emitter;
 private:	
 	UPROPERTY(EditAnywhere) APlayerCharacter* Player;
 	UPROPERTY(EditAnywhere) USkeletalMeshComponent* SkeletalMesh;
-	UPROPERTY(EditAnywhere, Category="Animations") UAnimMontage* PlayerShootAnim;
-	UPROPERTY(EditAnywhere, Category="Animations") UAnimMontage* WeaponShootAnim;
-	UPROPERTY(EditAnywhere, Category="Animations") UAnimMontage* WeaponReloadAnim;
-	UPROPERTY(EditAnywhere, Category="Animations") UAnimMontage* PlayerReloadAnim;
+	UPROPERTY(EditAnywhere,Replicated, Category="Animations") UAnimMontage* PlayerShootAnim;
+	UPROPERTY(EditAnywhere, Replicated,Category="Animations") UAnimMontage* WeaponShootAnim;
+	UPROPERTY(EditAnywhere, Replicated,Category="Animations") UAnimMontage* WeaponReloadAnim;
+	UPROPERTY(EditAnywhere, Replicated,Category="Animations") UAnimMontage* PlayerReloadAnim;
 	UPROPERTY(EditAnywhere, Category="Weapon Stats") int Damage {10};
 	UPROPERTY(EditAnywhere, Category="Weapon Stats") int DefaultAmmo {20};
 	UPROPERTY(EditAnywhere, Category="Weapon Stats") int Ammo {20};

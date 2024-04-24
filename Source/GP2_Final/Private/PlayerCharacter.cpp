@@ -40,11 +40,10 @@ APlayerCharacter::APlayerCharacter()
 
 	DamageComponent = CreateDefaultSubobject<UDamageComponent>("Damage Component");
 
-	//these 2 lines, and the same ones in begin play are the reason why client side movement works. it took... 7 hours to
+	//these single line, and the same one in begin play is the reason why client side movement works. it took... 7 hours to
 	//find this.
 	//https://forums.unrealengine.com/t/attaching-player-to-actor-not-replicating-movement-properly/1430038/9
 	//it took this person a month to find the same thing
-	GetCharacterMovement()->bIgnoreClientMovementErrorChecksAndCorrection = true;
 	GetCharacterMovement()->bServerAcceptClientAuthoritativePosition = true;
 }
 
@@ -53,9 +52,8 @@ void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
-	GetCharacterMovement()->bIgnoreClientMovementErrorChecksAndCorrection = true;
 	GetCharacterMovement()->bServerAcceptClientAuthoritativePosition = true;
-	
+
 	if(APlayerController* playerController = Cast<APlayerController>(GetController()))
 	{
 		if(UEnhancedInputLocalPlayerSubsystem* subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(playerController->GetLocalPlayer()))
@@ -113,11 +111,8 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 
 void APlayerCharacter::Move(const FInputActionValue& InputValue)
 {
-	
 	FVector2D input = InputValue.Get<FVector2D>();
 	input.Normalize();
-
-	AddMovementInput(input.Y * GetMoveForwardDir() + input.X * GetMoveRightDir());
 
 	SideInput = input.X;
 	ForwardInput = input.Y;
@@ -126,15 +121,16 @@ void APlayerCharacter::Move(const FInputActionValue& InputValue)
 		SideInput *= 2;
 		ForwardInput *= 2;
 	}
-	/*if()
-	{
-		GetController()->OnRep_ReplicatedMovement();
-	}*/
+
+	AddMovementInput(ForwardInput * GetMoveForwardDir() + SideInput * GetMoveRightDir());
+
+	MoveRPC(ForwardInput, SideInput);
 }
 
-void APlayerCharacter::MoveRPC_Implementation(const FVector DestLocation)
+void APlayerCharacter::MoveRPC_Implementation(const float Forward, const float Right)
 {
-	GetCapsuleComponent()->SetWorldLocation(DestLocation);
+	SideInput = Right;
+	ForwardInput = Forward;
 }
 
 void APlayerCharacter::Look(const FInputActionValue& InputValue)
@@ -143,19 +139,13 @@ void APlayerCharacter::Look(const FInputActionValue& InputValue)
 	AddControllerYawInput(input.X * LookSensitivity);
 	AddControllerPitchInput(-input.Y * LookSensitivity);
 
-	/*if(!GetController()->GetPawn()->IsLocallyControlled())
-	{
-		CapsuleRot = GetCapsuleComponent()->GetComponentRotation();
-	}
-	else
-	{
-		LookRPC_Implementation(CapsuleRot);
-	}*/
+	LookPitch = GetBaseAimRotation().Pitch;
+	LookRPC(LookPitch);
 }
 
-void APlayerCharacter::LookRPC_Implementation(const FRotator newRot)
+void APlayerCharacter::LookRPC_Implementation(const float Pitch)
 {
-	GetCapsuleComponent()->SetWorldRotation(newRot);
+	LookPitch = Pitch;
 }
 
 FVector APlayerCharacter::GetMoveForwardDir() const
@@ -190,44 +180,88 @@ void APlayerCharacter::ADS(const FInputActionValue& InputValue)
 
 void APlayerCharacter::Shoot(const FInputActionValue& InputValue)
 {
+	//PlayerWeapon->Shoot();
+	ShootRPC();
+}
+
+void APlayerCharacter::ShootRPC_Implementation()
+{
+	ClientShoot();
+}
+
+void APlayerCharacter::ClientShoot_Implementation()
+{
 	PlayerWeapon->Shoot();
 }
 
 void APlayerCharacter::Reload(const FInputActionValue& inputValue)
+{
+	ReloadRPC();
+}
+
+void APlayerCharacter::ReloadRPC_Implementation()
+{
+	ClientReload();
+}
+
+void APlayerCharacter::ClientReload_Implementation()
 {
 	PlayerWeapon->Reload();
 }
 
 void APlayerCharacter::Sprint(const FInputActionValue& InputValue)
 {
-		bIsSprinting = InputValue.Get<bool>();
-		if(bIsSprinting)
-		{
-			SideInput *= 2;
-			ForwardInput *= 2;
-		}
-		else
-		{
-			SideInput /= 2;
-			ForwardInput /= 2;
-		}
+	bIsSprinting = InputValue.Get<bool>();
+	
+
+	SprintRPC_Implementation(bIsSprinting);
+}
+
+void APlayerCharacter::ClientSprint_Implementation(const bool newVal)
+{
+	bIsSprinting = newVal;
+	if(bIsSprinting)
+	{
+		SideInput *= 2;
+		ForwardInput *= 2;
+	}
+	else
+	{
+		SideInput /= 2;
+		ForwardInput /= 2;
+	}
+}
+
+void APlayerCharacter::SprintRPC_Implementation(const bool newVal)
+{
+	ClientSprint(newVal);
+	if(bIsSprinting)
+	{
+		SideInput *= 2;
+		ForwardInput *= 2;
+	}
+	else
+	{
+		SideInput /= 2;
+		ForwardInput /= 2;
+	}
+	MoveRPC(ForwardInput, SideInput);
 }
 
 void APlayerCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-	DOREPLIFETIME(APlayerCharacter, MappingContext);
-	DOREPLIFETIME(APlayerCharacter, MoveAction);
-	DOREPLIFETIME(APlayerCharacter, SprintAction);
-	DOREPLIFETIME(APlayerCharacter, JumpAction);
+	//DOREPLIFETIME(APlayerCharacter, MappingContext);
+	//DOREPLIFETIME(APlayerCharacter, MoveAction);
+	//DOREPLIFETIME(APlayerCharacter, SprintAction);
+	//DOREPLIFETIME(APlayerCharacter, JumpAction);
 	DOREPLIFETIME(APlayerCharacter, bIsSprinting);
-	DOREPLIFETIME(APlayerCharacter, LookAction);
-	DOREPLIFETIME(APlayerCharacter, ReloadAction);
-	DOREPLIFETIME(APlayerCharacter, LookSensitivity);
+	//DOREPLIFETIME(APlayerCharacter, LookAction);
+	//DOREPLIFETIME(APlayerCharacter, ReloadAction);
+	//DOREPLIFETIME(APlayerCharacter, LookSensitivity);
 	DOREPLIFETIME(APlayerCharacter, SideInput);
 	DOREPLIFETIME(APlayerCharacter, ForwardInput);
 	DOREPLIFETIME(APlayerCharacter, bIsADS);
 	DOREPLIFETIME(APlayerCharacter, DamageComponent);
-	DOREPLIFETIME(APlayerCharacter, CapsuleLoc);
-	DOREPLIFETIME(APlayerCharacter,CapsuleRot)
+	DOREPLIFETIME(APlayerCharacter, LookPitch);
 }

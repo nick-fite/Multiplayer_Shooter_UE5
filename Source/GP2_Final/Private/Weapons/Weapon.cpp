@@ -44,6 +44,7 @@ void AWeapon::Shoot()
 {
 	if(!SkeletalMesh->GetAnimInstance()->Montage_IsPlaying(nullptr) && Ammo > 0)
 	{
+		//ShootRPC();
 		SkeletalMesh->GetAnimInstance()->Montage_Play(WeaponShootAnim);
 		Player->GetMesh()->GetAnimInstance()->Montage_Play(PlayerShootAnim);
 		Ammo--;
@@ -89,5 +90,14 @@ void AWeapon::Reload()
 		Ammo = DefaultAmmo;
 		ReloadDelegate.Broadcast();
 	//}
+}
+
+void AWeapon::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(AWeapon, PlayerReloadAnim);
+	DOREPLIFETIME(AWeapon, PlayerShootAnim);
+	DOREPLIFETIME(AWeapon, WeaponReloadAnim);
+	DOREPLIFETIME(AWeapon, WeaponShootAnim);
 }
 
