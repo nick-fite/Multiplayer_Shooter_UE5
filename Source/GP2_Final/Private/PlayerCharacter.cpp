@@ -8,6 +8,7 @@
 #include "camera/CameraComponent.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "hud/Crosshair.h"
 #include "Weapons/Weapon.h"
@@ -16,10 +17,11 @@
 APlayerCharacter::APlayerCharacter()
 {
 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-
 	CameraBoom =  CreateDefaultSubobject<USpringArmComponent>("Camera Boom");
 	ViewCamera = CreateDefaultSubobject<UCameraComponent>("View Camera");
 
+	bReplicates = true;
+	
 	CameraBoom->SetupAttachment(GetRootComponent());
 	ViewCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 
@@ -37,6 +39,13 @@ APlayerCharacter::APlayerCharacter()
 	GetCharacterMovement()->JumpZVelocity = 400.f;
 
 	DamageComponent = CreateDefaultSubobject<UDamageComponent>("Damage Component");
+
+	//these 2 lines, and the same ones in begin play are the reason why client side movement works. it took... 7 hours to
+	//find this.
+	//https://forums.unrealengine.com/t/attaching-player-to-actor-not-replicating-movement-properly/1430038/9
+	//it took this person a month to find the same thing
+	GetCharacterMovement()->bIgnoreClientMovementErrorChecksAndCorrection = true;
+	GetCharacterMovement()->bServerAcceptClientAuthoritativePosition = true;
 }
 
 // Called when the game starts or when spawned
@@ -44,6 +53,9 @@ void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
+	GetCharacterMovement()->bIgnoreClientMovementErrorChecksAndCorrection = true;
+	GetCharacterMovement()->bServerAcceptClientAuthoritativePosition = true;
+	
 	if(APlayerController* playerController = Cast<APlayerController>(GetController()))
 	{
 		if(UEnhancedInputLocalPlayerSubsystem* subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(playerController->GetLocalPlayer()))
@@ -101,6 +113,7 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 
 void APlayerCharacter::Move(const FInputActionValue& InputValue)
 {
+	
 	FVector2D input = InputValue.Get<FVector2D>();
 	input.Normalize();
 
@@ -113,7 +126,15 @@ void APlayerCharacter::Move(const FInputActionValue& InputValue)
 		SideInput *= 2;
 		ForwardInput *= 2;
 	}
-	
+	/*if()
+	{
+		GetController()->OnRep_ReplicatedMovement();
+	}*/
+}
+
+void APlayerCharacter::MoveRPC_Implementation(const FVector DestLocation)
+{
+	GetCapsuleComponent()->SetWorldLocation(DestLocation);
 }
 
 void APlayerCharacter::Look(const FInputActionValue& InputValue)
@@ -122,6 +143,19 @@ void APlayerCharacter::Look(const FInputActionValue& InputValue)
 	AddControllerYawInput(input.X * LookSensitivity);
 	AddControllerPitchInput(-input.Y * LookSensitivity);
 
+	/*if(!GetController()->GetPawn()->IsLocallyControlled())
+	{
+		CapsuleRot = GetCapsuleComponent()->GetComponentRotation();
+	}
+	else
+	{
+		LookRPC_Implementation(CapsuleRot);
+	}*/
+}
+
+void APlayerCharacter::LookRPC_Implementation(const FRotator newRot)
+{
+	GetCapsuleComponent()->SetWorldRotation(newRot);
 }
 
 FVector APlayerCharacter::GetMoveForwardDir() const
@@ -177,4 +211,23 @@ void APlayerCharacter::Sprint(const FInputActionValue& InputValue)
 			SideInput /= 2;
 			ForwardInput /= 2;
 		}
+}
+
+void APlayerCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(APlayerCharacter, MappingContext);
+	DOREPLIFETIME(APlayerCharacter, MoveAction);
+	DOREPLIFETIME(APlayerCharacter, SprintAction);
+	DOREPLIFETIME(APlayerCharacter, JumpAction);
+	DOREPLIFETIME(APlayerCharacter, bIsSprinting);
+	DOREPLIFETIME(APlayerCharacter, LookAction);
+	DOREPLIFETIME(APlayerCharacter, ReloadAction);
+	DOREPLIFETIME(APlayerCharacter, LookSensitivity);
+	DOREPLIFETIME(APlayerCharacter, SideInput);
+	DOREPLIFETIME(APlayerCharacter, ForwardInput);
+	DOREPLIFETIME(APlayerCharacter, bIsADS);
+	DOREPLIFETIME(APlayerCharacter, DamageComponent);
+	DOREPLIFETIME(APlayerCharacter, CapsuleLoc);
+	DOREPLIFETIME(APlayerCharacter,CapsuleRot)
 }
