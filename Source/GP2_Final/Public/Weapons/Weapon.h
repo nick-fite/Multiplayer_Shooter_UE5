@@ -46,12 +46,12 @@ public:
 	
 	UPROPERTY(EditAnywhere) UNiagaraComponent* Emitter;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite) USkeletalMeshComponent* SkeletalMesh;
+	UPROPERTY(EditAnywhere, Replicated,Category="Animations") UAnimMontage* PlayerReloadAnim;
 private:	
 	UPROPERTY(EditAnywhere) APlayerCharacter* Player;
 	UPROPERTY(EditAnywhere,Replicated, Category="Animations") UAnimMontage* PlayerShootAnim;
 	UPROPERTY(EditAnywhere, Replicated,Category="Animations") UAnimMontage* WeaponShootAnim;
 	UPROPERTY(EditAnywhere, Replicated,Category="Animations") UAnimMontage* WeaponReloadAnim;
-	UPROPERTY(EditAnywhere, Replicated,Category="Animations") UAnimMontage* PlayerReloadAnim;
 	UPROPERTY(EditAnywhere, Category="Weapon Stats") int Damage {10};
 	UPROPERTY(EditAnywhere, Category="Weapon Stats") int DefaultAmmo {20};
 	UPROPERTY(EditAnywhere, Category="Weapon Stats") int Ammo {20};

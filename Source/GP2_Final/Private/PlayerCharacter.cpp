@@ -66,7 +66,6 @@ void APlayerCharacter::BeginPlay()
 
 	if(WeaponToSpawn)
 	{
-
 		const FRotator socketRotate = GetMesh()->GetSocketRotation("hand_r_weapon_socket");
 		const FVector SocketLoc = GetMesh()->GetSocketLocation("hand_r_weapon_socket");
 
@@ -89,7 +88,7 @@ void APlayerCharacter::BeginPlay()
 
 	CameraBoom->SetRelativeLocation(SpringArmPosition);
 
-	bUseControllerRotationYaw = true;	
+	bUseControllerRotationYaw = true;
 }
 
 // Called every frame
@@ -204,6 +203,13 @@ void APlayerCharacter::ClientShoot_Implementation()
 
 void APlayerCharacter::Reload(const FInputActionValue& inputValue)
 {
+	if(!GetMesh()->GetAnimInstance()->Montage_IsPlaying(nullptr))
+	{
+		USkeletalMeshComponent* mesh;
+		mesh = GetMesh();
+		UAnimInstance* inst = mesh->GetAnimInstance();
+		inst->Montage_Play(PlayerWeapon->PlayerReloadAnim);
+	}
 	ReloadRPC();
 }
 
@@ -261,6 +267,8 @@ void APlayerCharacter::KillPlayer()
 {
 	GetMesh()->SetSimulatePhysics(true);
 	DisableInput(GetLocalViewingPlayerController());
+
+	
 
 	KillPlayerRPC(GetMesh(), GetLocalViewingPlayerController());
 }
