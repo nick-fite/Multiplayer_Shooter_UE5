@@ -10,6 +10,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "GameFramework/GameModeBase.h"
 #include "hud/Crosshair.h"
 #include "Weapons/Weapon.h"
 
@@ -40,6 +41,7 @@ APlayerCharacter::APlayerCharacter()
 
 	DamageComponent = CreateDefaultSubobject<UDamageComponent>("Damage Component");
 
+	GetMesh()->SetIsReplicated(true);
 	//these single line, and the same one in begin play is the reason why client side movement works. it took... 7 hours to
 	//find this.
 	//https://forums.unrealengine.com/t/attaching-player-to-actor-not-replicating-movement-properly/1430038/9
@@ -76,8 +78,13 @@ void APlayerCharacter::BeginPlay()
 	if(CrosshairToSpawn)
 	{
 		SpawnedCrosshair = CreateWidget<UCrosshair>(GetWorld(), CrosshairToSpawn);	
-		SpawnedCrosshair->AddToViewport(999);
 		SpawnedCrosshair->AttachedPlayer = this;
+		SetHudDelegate.Broadcast();
+		SpawnedCrosshair->SetHud();
+		if(IsLocallyControlled())
+		{
+			SpawnedCrosshair->AddToViewport(999);
+		}
 	}
 
 	CameraBoom->SetRelativeLocation(SpringArmPosition);
@@ -192,6 +199,7 @@ void APlayerCharacter::ShootRPC_Implementation()
 void APlayerCharacter::ClientShoot_Implementation()
 {
 	PlayerWeapon->Shoot();
+	SpawnedCrosshair->Shoot();
 }
 
 void APlayerCharacter::Reload(const FInputActionValue& inputValue)
@@ -207,6 +215,7 @@ void APlayerCharacter::ReloadRPC_Implementation()
 void APlayerCharacter::ClientReload_Implementation()
 {
 	PlayerWeapon->Reload();
+	SpawnedCrosshair->Reload();
 }
 
 void APlayerCharacter::Sprint(const FInputActionValue& InputValue)
@@ -246,6 +255,28 @@ void APlayerCharacter::SprintRPC_Implementation(const bool newVal)
 		ForwardInput /= 2;
 	}
 	MoveRPC(ForwardInput, SideInput);
+}
+
+void APlayerCharacter::KillPlayer()
+{
+	GetMesh()->SetSimulatePhysics(true);
+	DisableInput(GetLocalViewingPlayerController());
+
+	KillPlayerRPC(GetMesh(), GetLocalViewingPlayerController());
+	SetPlayerState();
+}
+
+void APlayerCharacter::KillPlayerRPC_Implementation(USkeletalMeshComponent* deadMesh, APlayerController* deadController)
+{
+	GetMesh()->SetSimulatePhysics(true);
+	DisableInput(GetLocalViewingPlayerController());
+	KillPlayerClient(deadMesh,deadController);
+}
+
+void APlayerCharacter::KillPlayerClient_Implementation(USkeletalMeshComponent* deadMesh, APlayerController* deadController)
+{
+	GetMesh()->SetSimulatePhysics(true);
+	DisableInput(GetLocalViewingPlayerController());
 }
 
 void APlayerCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

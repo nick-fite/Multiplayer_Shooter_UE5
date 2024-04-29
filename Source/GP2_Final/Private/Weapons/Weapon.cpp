@@ -72,7 +72,7 @@ void AWeapon::Shoot()
 				UE_LOG(LogTemp, Warning, TEXT("Hit player: %d"), player->DamageComponent->GetHealth());
 				if(player->DamageComponent->GetHealth() <= 0)
 				{
-					player->DamageComponent->Kill();
+					player->KillPlayer();
 				}
 				player->PrintWasHit();
 			}

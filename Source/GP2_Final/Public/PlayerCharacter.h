@@ -8,6 +8,10 @@
 #include "Net/UnrealNetwork.h"
 #include "PlayerCharacter.generated.h"
 
+
+UDELEGATE()
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FSetHudDelegate);
+
 class UDamageComponent;
 class UCrosshair;
 class AWeapon;
@@ -79,6 +83,7 @@ private:
 	UPROPERTY(EditAnywhere, Category="Weapon") TSubclassOf<UCrosshair> CrosshairToSpawn;
 	UPROPERTY(EditAnywhere, Category="Weapon") UCrosshair* SpawnedCrosshair;
 
+
 public:
 
 	UPROPERTY(EditAnywhere, Replicated, BlueprintReadWrite) bool bIsADS;
@@ -91,10 +96,16 @@ public:
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Weapon") AWeapon* PlayerWeapon;
 
+	UPROPERTY() FSetHudDelegate SetHudDelegate;
+	
 	UFUNCTION() void PrintWasHit()
 	{
 		UE_LOG(LogTemp, Warning, TEXT("%s was hit"), *this->GetName());
 	}
+
+	UFUNCTION() void KillPlayer();
+	UFUNCTION(Server, Reliable) void KillPlayerRPC(USkeletalMeshComponent* deadMesh, APlayerController* deadController);
+	UFUNCTION(NetMulticast, Reliable) void KillPlayerClient(USkeletalMeshComponent* deadMesh, APlayerController* deadController);
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 };

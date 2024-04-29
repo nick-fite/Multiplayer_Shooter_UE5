@@ -17,4 +17,8 @@ class GP2_FINAL_API UCrosshair : public UUserWidget
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite) APlayerCharacter* AttachedPlayer;
+	
+	UFUNCTION(BlueprintImplementableEvent) void SetHud();
+	UFUNCTION(BlueprintImplementableEvent) void Shoot();
+	UFUNCTION(BlueprintImplementableEvent) void Reload();
 };
