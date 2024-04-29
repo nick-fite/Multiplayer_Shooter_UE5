@@ -263,7 +263,6 @@ void APlayerCharacter::KillPlayer()
 	DisableInput(GetLocalViewingPlayerController());
 
 	KillPlayerRPC(GetMesh(), GetLocalViewingPlayerController());
-	SetPlayerState();
 }
 
 void APlayerCharacter::KillPlayerRPC_Implementation(USkeletalMeshComponent* deadMesh, APlayerController* deadController)
