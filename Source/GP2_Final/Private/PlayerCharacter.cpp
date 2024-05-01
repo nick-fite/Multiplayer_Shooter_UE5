@@ -203,13 +203,6 @@ void APlayerCharacter::ClientShoot_Implementation()
 
 void APlayerCharacter::Reload(const FInputActionValue& inputValue)
 {
-	if(!GetMesh()->GetAnimInstance()->Montage_IsPlaying(nullptr))
-	{
-		USkeletalMeshComponent* mesh;
-		mesh = GetMesh();
-		UAnimInstance* inst = mesh->GetAnimInstance();
-		inst->Montage_Play(PlayerWeapon->PlayerReloadAnim);
-	}
 	ReloadRPC();
 }
 
@@ -230,6 +223,12 @@ void APlayerCharacter::Sprint(const FInputActionValue& InputValue)
 	
 
 	SprintRPC_Implementation(bIsSprinting);
+}
+
+void APlayerCharacter::Jump()
+{
+	Super::Jump();
+	GetMesh()->GetAnimInstance()->Montage_Play(JumpMontage);
 }
 
 void APlayerCharacter::ClientSprint_Implementation(const bool newVal)

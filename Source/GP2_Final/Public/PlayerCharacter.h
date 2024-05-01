@@ -60,6 +60,7 @@ private:
 	UFUNCTION() void Sprint(const FInputActionValue& InputValue);
 	UFUNCTION(Server, Reliable) void SprintRPC(const bool newVal);
 	UFUNCTION(NetMulticast, Reliable) void ClientSprint(const bool newVal);
+	virtual void Jump() override;
 
 	//camera
 	UPROPERTY(VisibleAnywhere, Category="View") USpringArmComponent* CameraBoom;
@@ -80,6 +81,8 @@ private:
 
 	UPROPERTY(EditAnywhere, Category="Weapon") TSubclassOf<AWeapon> WeaponToSpawn;
 
+	UPROPERTY(EditAnywhere, Category= "Animations") UAnimMontage* JumpMontage;
+	
 	UPROPERTY(EditAnywhere, Category="Weapon") TSubclassOf<UCrosshair> CrosshairToSpawn;
 	UPROPERTY(EditAnywhere, Category="Weapon") UCrosshair* SpawnedCrosshair;
 
@@ -107,5 +110,7 @@ public:
 	UFUNCTION(Server, Reliable) void KillPlayerRPC(USkeletalMeshComponent* deadMesh, APlayerController* deadController);
 	UFUNCTION(NetMulticast, Reliable) void KillPlayerClient(USkeletalMeshComponent* deadMesh, APlayerController* deadController);
 
+	UFUNCTION(BlueprintImplementableEvent) void PlayMontage(UAnimMontage* montageToPlay);
+	
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 };

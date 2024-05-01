@@ -82,11 +82,14 @@ void AWeapon::Shoot()
 
 void AWeapon::Reload()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Reloading"));
-	SkeletalMesh->GetAnimInstance()->Montage_Play(WeaponReloadAnim);
-	//Player->GetMesh()->GetAnimInstance()->Montage_Play(PlayerReloadAnim);
-	Ammo = DefaultAmmo;
-	ReloadDelegate.Broadcast();
+	if(!SkeletalMesh->GetAnimInstance()->Montage_IsPlaying(nullptr))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Reloading"));
+		SkeletalMesh->GetAnimInstance()->Montage_Play(WeaponReloadAnim);
+		Player->GetMesh()->GetAnimInstance()->Montage_Play(PlayerReloadAnim);
+		Ammo = DefaultAmmo;
+		ReloadDelegate.Broadcast();
+	}
 }
 
 void AWeapon::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
