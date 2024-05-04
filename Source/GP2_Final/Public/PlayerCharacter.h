@@ -51,9 +51,9 @@ private:
 	UFUNCTION() FVector GetMoveRightDir() const;
 
 	UFUNCTION() void ADS(const FInputActionValue& InputValue);
-	UFUNCTION() void Shoot(const FInputActionValue& InputValue);
-	UFUNCTION(Server, Reliable) void ShootRPC();
-	UFUNCTION(NetMulticast, Reliable) void ClientShoot();
+	UFUNCTION(Client, Reliable) void Shoot(const FInputActionValue& InputValue);
+	UFUNCTION(Server, Reliable) void ShootRPC(APlayerCharacter* damagedPlayer, int damage);
+	UFUNCTION(NetMulticast, Reliable) void ShootMulticast(APlayerCharacter* damagedPlayer, int damage);
 	UFUNCTION() void Reload(const FInputActionValue& inputValue);
 	UFUNCTION(Server, Reliable) void ReloadRPC();
 	UFUNCTION(NetMulticast, Reliable) void ClientReload();
@@ -88,29 +88,26 @@ private:
 
 
 public:
-
+	
 	UPROPERTY(EditAnywhere, Replicated, BlueprintReadWrite) bool bIsADS;
 	UPROPERTY(EditAnywhere, Replicated, BlueprintReadWrite) float SideInput;
 	UPROPERTY(EditAnywhere, Replicated, BlueprintReadWrite) float ForwardInput;
 
 	UPROPERTY(EditAnywhere,Replicated,BlueprintReadWrite) float LookPitch;
-
-	UPROPERTY(EditAnywhere, Replicated, Blueprintable) UDamageComponent* DamageComponent;
+	
+	UPROPERTY(EditAnywhere, Replicated, BlueprintReadWrite) UDamageComponent* DamageComponent;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Weapon") AWeapon* PlayerWeapon;
 
 	UPROPERTY() FSetHudDelegate SetHudDelegate;
 	
-	UFUNCTION() void PrintWasHit()
-	{
-		UE_LOG(LogTemp, Warning, TEXT("%s was hit"), *this->GetName());
-	}
+	UFUNCTION(NetMulticast, Reliable) void PrintWasHit();
 
 	UFUNCTION() void KillPlayer();
-	UFUNCTION(Server, Reliable) void KillPlayerRPC(USkeletalMeshComponent* deadMesh, APlayerController* deadController);
-	UFUNCTION(NetMulticast, Reliable) void KillPlayerClient(USkeletalMeshComponent* deadMesh, APlayerController* deadController);
+	UFUNCTION(NetMulticast, Reliable) void CheckIfPlayerDeadMulticast(APlayerCharacter* damagedPlayer);
+	UFUNCTION(Server, Reliable) void CheckIfPlayerDeadServer(APlayerCharacter* damagedPlayer);
 
-	UFUNCTION(BlueprintImplementableEvent) void PlayMontage(UAnimMontage* montageToPlay);
-	
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
+	UFUNCTION(NetMulticast, Reliable) void TestMulticast();
 };

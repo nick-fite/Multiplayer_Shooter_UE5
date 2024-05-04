@@ -36,11 +36,12 @@ public:
 	{
 		Player = PlayerCharacter; 
 	}
-
-	UFUNCTION(BlueprintCallable) void Shoot();
+		
+	UFUNCTION() APlayerCharacter* Shoot();
 	UFUNCTION(BlueprintCallable) void Reload();
 	UFUNCTION(BlueprintCallable) int GetCurrentAmmo(){ return Ammo; }
-	UFUNCTION(BlueprintCallable) int GetDefaultAmmo() {return DefaultAmmo; }
+	UFUNCTION(BlueprintCallable) int GetDefaultAmmo() { return DefaultAmmo; }
+	UFUNCTION() int GetDamage() const { return Damage; }
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	

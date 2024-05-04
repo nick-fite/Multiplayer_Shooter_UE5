@@ -8,6 +8,8 @@
 #include "camera/CameraComponent.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "GS_MultiplayerState.h"
+#include "MultiplayerGameMode.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/GameModeBase.h"
@@ -53,6 +55,10 @@ APlayerCharacter::APlayerCharacter()
 void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+
+	DamageComponent->SetIsReplicated(true);
+	bAlwaysRelevant = true;
+	
 
 	GetCharacterMovement()->bServerAcceptClientAuthoritativePosition = true;
 
@@ -183,22 +189,29 @@ void APlayerCharacter::ADS(const FInputActionValue& InputValue)
 	}
 }
 
-
-void APlayerCharacter::Shoot(const FInputActionValue& InputValue)
+void APlayerCharacter::Shoot_Implementation(const FInputActionValue& InputValue)
 {
-	//PlayerWeapon->Shoot();
-	ShootRPC();
-}
+	//code was originally implemented ENTIRELY within AWeapon but was failing to replicate.
+	//Now weapon is used to get player that was hit, and then we replicate here.
+	APlayerCharacter* hitplayer = PlayerWeapon->Shoot();
+	if(IsValid(hitplayer))
+	{
+		ShootRPC(hitplayer, PlayerWeapon->GetDamage() * -1);
+		CheckIfPlayerDeadServer(hitplayer);
+	}
 
-void APlayerCharacter::ShootRPC_Implementation()
-{
-	ClientShoot();
-}
-
-void APlayerCharacter::ClientShoot_Implementation()
-{
-	PlayerWeapon->Shoot();
 	SpawnedCrosshair->Shoot();
+}
+
+void APlayerCharacter::ShootRPC_Implementation(APlayerCharacter* damagedPlayer, int damage)
+{
+	ShootMulticast(damagedPlayer, damage);
+}
+
+void APlayerCharacter::ShootMulticast_Implementation(APlayerCharacter* damagedPlayer, int damage)
+{
+	damagedPlayer->DamageComponent->ChangeHealth(damage);
+	UE_LOG(LogTemp, Warning, TEXT("%s was hit and is at %d health"), *damagedPlayer->GetName(), damagedPlayer->DamageComponent->GetHealth());
 }
 
 void APlayerCharacter::Reload(const FInputActionValue& inputValue)
@@ -262,43 +275,48 @@ void APlayerCharacter::SprintRPC_Implementation(const bool newVal)
 	MoveRPC(ForwardInput, SideInput);
 }
 
+void APlayerCharacter::PrintWasHit_Implementation()
+{
+	UE_LOG(LogTemp, Warning, TEXT("%s was hit"), *this->GetName());
+}
+
 void APlayerCharacter::KillPlayer()
 {
 	GetMesh()->SetSimulatePhysics(true);
 	DisableInput(GetLocalViewingPlayerController());
-
-	
-
-	KillPlayerRPC(GetMesh(), GetLocalViewingPlayerController());
 }
 
-void APlayerCharacter::KillPlayerRPC_Implementation(USkeletalMeshComponent* deadMesh, APlayerController* deadController)
+void APlayerCharacter::CheckIfPlayerDeadMulticast_Implementation(APlayerCharacter* damagedPlayer)
 {
-	GetMesh()->SetSimulatePhysics(true);
-	DisableInput(GetLocalViewingPlayerController());
-	KillPlayerClient(deadMesh,deadController);
+	if(damagedPlayer->DamageComponent->GetHealth() <= 0)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("%s is dead"), *damagedPlayer->GetName());
+		damagedPlayer->KillPlayer();
+	}
 }
 
-void APlayerCharacter::KillPlayerClient_Implementation(USkeletalMeshComponent* deadMesh, APlayerController* deadController)
+void APlayerCharacter::CheckIfPlayerDeadServer_Implementation(APlayerCharacter* damagedPlayer)
 {
-	GetMesh()->SetSimulatePhysics(true);
-	DisableInput(GetLocalViewingPlayerController());
+	if(damagedPlayer->DamageComponent->GetHealth() <= 0)
+ 	{
+ 		UE_LOG(LogTemp, Warning, TEXT("%s is dead"), *damagedPlayer->GetName());
+ 		damagedPlayer->KillPlayer();
+ 	}
+	CheckIfPlayerDeadMulticast(damagedPlayer);
 }
 
 void APlayerCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-	//DOREPLIFETIME(APlayerCharacter, MappingContext);
-	//DOREPLIFETIME(APlayerCharacter, MoveAction);
-	//DOREPLIFETIME(APlayerCharacter, SprintAction);
-	//DOREPLIFETIME(APlayerCharacter, JumpAction);
 	DOREPLIFETIME(APlayerCharacter, bIsSprinting);
-	//DOREPLIFETIME(APlayerCharacter, LookAction);
-	//DOREPLIFETIME(APlayerCharacter, ReloadAction);
-	//DOREPLIFETIME(APlayerCharacter, LookSensitivity);
 	DOREPLIFETIME(APlayerCharacter, SideInput);
 	DOREPLIFETIME(APlayerCharacter, ForwardInput);
 	DOREPLIFETIME(APlayerCharacter, bIsADS);
 	DOREPLIFETIME(APlayerCharacter, DamageComponent);
 	DOREPLIFETIME(APlayerCharacter, LookPitch);
+}
+
+void APlayerCharacter::TestMulticast_Implementation()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Multicast from cpp"));
 }

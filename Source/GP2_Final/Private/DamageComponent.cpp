@@ -3,9 +3,13 @@
 
 #include "DamageComponent.h"
 
+#include "Net/UnrealNetwork.h"
+
 // Sets default values for this component's properties
 UDamageComponent::UDamageComponent()
 {
+	SetNetAddressable();
+	SetIsReplicated(true);
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
@@ -18,11 +22,10 @@ UDamageComponent::UDamageComponent()
 void UDamageComponent::BeginPlay()
 {
 	Super::BeginPlay();
-
+	 SetIsReplicated(true);
 	// ...
 	
 }
-
 
 // Called every frame
 void UDamageComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -31,4 +34,3 @@ void UDamageComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 
 	// ...
 }
-

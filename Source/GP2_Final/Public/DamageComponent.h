@@ -37,8 +37,15 @@ public:
 		Health += HealthToAdd;
 	}
 
+	UFUNCTION(BlueprintCallable)
+	void SetHealth(int newHealthValue)
+	{
+		Health = newHealthValue;
+	}
+
 	UFUNCTION(BlueprintCallable) void Kill()
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Player is head"));
 	}
 };
+
