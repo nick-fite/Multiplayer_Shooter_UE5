@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "PlayerCharacter.h"
 #include "GameFramework/GameStateBase.h"
 #include "GS_MultiplayerState.generated.h"
 
@@ -19,4 +20,5 @@ public:
 	{
 		UE_LOG(LogTemp, Warning, TEXT("print from game state"));
 	}
+	UFUNCTION(BlueprintImplementableEvent) void RespawnPlayer(APlayerCharacter* playerToRespawn);
 };

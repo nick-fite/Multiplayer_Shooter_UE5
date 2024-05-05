@@ -9,6 +9,8 @@
 #include "PlayerCharacter.generated.h"
 
 
+class UWidget;
+class UWidgetComponent;
 UDELEGATE()
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FSetHudDelegate);
 
@@ -86,6 +88,7 @@ private:
 	UPROPERTY(EditAnywhere, Category="Weapon") TSubclassOf<UCrosshair> CrosshairToSpawn;
 	UPROPERTY(EditAnywhere, Category="Weapon") UCrosshair* SpawnedCrosshair;
 
+	UPROPERTY(EditAnywhere,Replicated ,Category="Widgets") UWidgetComponent* HealthWidget;	
 
 public:
 	
@@ -103,7 +106,7 @@ public:
 	
 	UFUNCTION(NetMulticast, Reliable) void PrintWasHit();
 
-	UFUNCTION() void KillPlayer();
+	UFUNCTION(BlueprintCallable) void KillPlayer();
 	UFUNCTION(NetMulticast, Reliable) void CheckIfPlayerDeadMulticast(APlayerCharacter* damagedPlayer);
 	UFUNCTION(Server, Reliable) void CheckIfPlayerDeadServer(APlayerCharacter* damagedPlayer);
 

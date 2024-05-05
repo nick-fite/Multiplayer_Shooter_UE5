@@ -24,12 +24,19 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 private:
-	UPROPERTY(EditDefaultsOnly) int Health{100};
+	UPROPERTY() int Health{100};
+	UPROPERTY(EditDefaultsOnly) int DefaultHealth{100};
 public:
 	UFUNCTION(BlueprintCallable)
 	int GetHealth()
 	{
 		return Health;
+	}
+
+	UFUNCTION(BlueprintCallable)
+	int GetDefaultHealth()
+	{
+		return DefaultHealth;
 	}
 
 	UFUNCTION(BlueprintCallable) void ChangeHealth(int HealthToAdd)

@@ -9,11 +9,12 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "GS_MultiplayerState.h"
-#include "MultiplayerGameMode.h"
 #include "Components/CapsuleComponent.h"
+#include "Components/WidgetComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/GameModeBase.h"
 #include "hud/Crosshair.h"
+#include "hud/PlayerHealthBar.h"
 #include "Weapons/Weapon.h"
 
 // Sets default values
@@ -22,6 +23,10 @@ APlayerCharacter::APlayerCharacter()
 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	CameraBoom =  CreateDefaultSubobject<USpringArmComponent>("Camera Boom");
 	ViewCamera = CreateDefaultSubobject<UCameraComponent>("View Camera");
+	
+	HealthWidget = CreateDefaultSubobject<UWidgetComponent>("Health Widget");
+	HealthWidget->AttachToComponent(GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
+	
 
 	bReplicates = true;
 	
@@ -44,7 +49,7 @@ APlayerCharacter::APlayerCharacter()
 	DamageComponent = CreateDefaultSubobject<UDamageComponent>("Damage Component");
 
 	GetMesh()->SetIsReplicated(true);
-	//these single line, and the same one in begin play is the reason why client side movement works. it took... 7 hours to
+	//this single line, and the same one in begin play is the reason why client side movement works. it took... 7 hours to
 	//find this.
 	//https://forums.unrealengine.com/t/attaching-player-to-actor-not-replicating-movement-properly/1430038/9
 	//it took this person a month to find the same thing
@@ -95,6 +100,13 @@ void APlayerCharacter::BeginPlay()
 	CameraBoom->SetRelativeLocation(SpringArmPosition);
 
 	bUseControllerRotationYaw = true;
+
+	if(UPlayerHealthBar* HealthBar = Cast<UPlayerHealthBar>(HealthWidget->GetWidget()))
+    	{
+			HealthBar->CurrentHealth = DamageComponent->GetHealth();
+			HealthBar->DefaultHealth = DamageComponent->GetDefaultHealth();
+    		HealthBar->SetDefaults();
+    	}
 }
 
 // Called every frame
@@ -211,7 +223,16 @@ void APlayerCharacter::ShootRPC_Implementation(APlayerCharacter* damagedPlayer, 
 void APlayerCharacter::ShootMulticast_Implementation(APlayerCharacter* damagedPlayer, int damage)
 {
 	damagedPlayer->DamageComponent->ChangeHealth(damage);
-	UE_LOG(LogTemp, Warning, TEXT("%s was hit and is at %d health"), *damagedPlayer->GetName(), damagedPlayer->DamageComponent->GetHealth());
+	if(UPlayerHealthBar* HealthBar = Cast<UPlayerHealthBar>(damagedPlayer->HealthWidget->GetWidget()))
+	{
+		HealthBar->CurrentHealth = damagedPlayer->DamageComponent->GetHealth();
+		HealthBar->ChangeHealth();
+		UE_LOG(LogTemp, Warning, TEXT("%s was hit and is at %d health"), *damagedPlayer->GetName(), damagedPlayer->DamageComponent->GetHealth());
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Cast didn't work"));
+	}
 }
 
 void APlayerCharacter::Reload(const FInputActionValue& inputValue)
@@ -284,6 +305,15 @@ void APlayerCharacter::KillPlayer()
 {
 	GetMesh()->SetSimulatePhysics(true);
 	DisableInput(GetLocalViewingPlayerController());
+	HealthWidget->SetVisibility(false);
+	if(AGS_MultiplayerState* state = Cast<AGS_MultiplayerState>(GetWorld()->GetGameState()))
+	{
+		state->RespawnPlayer(this);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Wrong state: %s"), *GetWorld()->GetGameState()->GetName());
+	}
 }
 
 void APlayerCharacter::CheckIfPlayerDeadMulticast_Implementation(APlayerCharacter* damagedPlayer)
@@ -291,6 +321,7 @@ void APlayerCharacter::CheckIfPlayerDeadMulticast_Implementation(APlayerCharacte
 	if(damagedPlayer->DamageComponent->GetHealth() <= 0)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("%s is dead"), *damagedPlayer->GetName());
+		damagedPlayer->HealthWidget->SetVisibility(false);
 		damagedPlayer->KillPlayer();
 	}
 }
@@ -314,6 +345,7 @@ void APlayerCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 	DOREPLIFETIME(APlayerCharacter, bIsADS);
 	DOREPLIFETIME(APlayerCharacter, DamageComponent);
 	DOREPLIFETIME(APlayerCharacter, LookPitch);
+	DOREPLIFETIME(APlayerCharacter, HealthWidget);
 }
 
 void APlayerCharacter::TestMulticast_Implementation()
