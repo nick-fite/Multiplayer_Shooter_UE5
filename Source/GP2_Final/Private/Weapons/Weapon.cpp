@@ -32,12 +32,12 @@ void AWeapon::Tick(float DeltaTime)
 
 APlayerCharacter* AWeapon::Shoot()
 {
-	if(!SkeletalMesh->GetAnimInstance()->Montage_IsPlaying(nullptr) && Ammo > 0)
-	{
+	//if(!SkeletalMesh->GetAnimInstance()->Montage_IsPlaying(nullptr) && Ammo > 0)
+	//{
 		UE_LOG(LogTemp, Warning, TEXT("Calling Shoot"));
 		
-		SkeletalMesh->GetAnimInstance()->Montage_Play(WeaponShootAnim);
-		Player->GetMesh()->GetAnimInstance()->Montage_Play(PlayerShootAnim);
+		//SkeletalMesh->GetAnimInstance()->Montage_Play(WeaponShootAnim);
+		//Player->GetMesh()->GetAnimInstance()->Montage_Play(PlayerShootAnim);
 		Ammo--;
 		if(APlayerController* playerController = Cast<APlayerController>(Player->GetController()))
 		{
@@ -60,7 +60,7 @@ APlayerCharacter* AWeapon::Shoot()
 			}
 			return  nullptr;
 		}
-	}
+	//}
 	return nullptr;
 }
 
@@ -83,4 +83,13 @@ void AWeapon::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeP
 	DOREPLIFETIME(AWeapon, PlayerShootAnim);
 	DOREPLIFETIME(AWeapon, WeaponReloadAnim);
 	DOREPLIFETIME(AWeapon, WeaponShootAnim);
+}
+
+void AWeapon::PlayShootAnim()
+{
+	if(!SkeletalMesh->GetAnimInstance()->Montage_IsPlaying(nullptr))
+	{
+		SkeletalMesh->GetAnimInstance()->Montage_Play(WeaponShootAnim);
+		Player->GetMesh()->GetAnimInstance()->Montage_Play(PlayerShootAnim);
+	}
 }

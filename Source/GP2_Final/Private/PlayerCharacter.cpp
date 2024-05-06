@@ -9,6 +9,8 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "GS_MultiplayerState.h"
+#include "MultiplayerGameInstance.h"
+#include "MultiplayerGameMode.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/WidgetComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -103,6 +105,10 @@ void APlayerCharacter::BeginPlay()
 
 	if(UPlayerHealthBar* HealthBar = Cast<UPlayerHealthBar>(HealthWidget->GetWidget()))
     	{
+			if(const UMultiplayerGameInstance* gameInstance = Cast<UMultiplayerGameInstance>(GetGameInstance()))
+			{
+				HealthBar->Name = FText::FromString(gameInstance->PlayerName);
+			}
 			HealthBar->CurrentHealth = DamageComponent->GetHealth();
 			HealthBar->DefaultHealth = DamageComponent->GetDefaultHealth();
     		HealthBar->SetDefaults();
@@ -191,12 +197,14 @@ void APlayerCharacter::ADS(const FInputActionValue& InputValue)
 	
 	if (bIsADS)
 	{
-		bIsSprinting = true;
+		ViewCamera->SetFieldOfView(ADS_FOV);
+		bIsADS = true;
 		UE_LOG(LogTemp, Warning, TEXT("ADS: true"));
 	}
 	else
 	{
-		bIsSprinting = false;
+		ViewCamera->SetFieldOfView(DefaultFOV);
+		bIsADS = false;
 		UE_LOG(LogTemp, Warning, TEXT("ADS: False"));
 	}
 }
@@ -205,14 +213,19 @@ void APlayerCharacter::Shoot_Implementation(const FInputActionValue& InputValue)
 {
 	//code was originally implemented ENTIRELY within AWeapon but was failing to replicate.
 	//Now weapon is used to get player that was hit, and then we replicate here.
-	APlayerCharacter* hitplayer = PlayerWeapon->Shoot();
-	if(IsValid(hitplayer))
-	{
-		ShootRPC(hitplayer, PlayerWeapon->GetDamage() * -1);
-		CheckIfPlayerDeadServer(hitplayer);
-	}
+	//PlayerWeapon->PlayShootAnim();
 
-	SpawnedCrosshair->Shoot();
+	if(!PlayerWeapon->SkeletalMesh->GetAnimInstance()->Montage_IsPlaying(nullptr) && PlayerWeapon->GetCurrentAmmo() > 0)
+	{
+		PlayShootAnimServer();
+		APlayerCharacter* hitplayer = PlayerWeapon->Shoot();
+		if(IsValid(hitplayer))
+		{
+			ShootRPC(hitplayer, PlayerWeapon->GetDamage() * -1);
+			CheckIfPlayerDeadServer(hitplayer);
+		}
+		SpawnedCrosshair->Shoot();
+	}
 }
 
 void APlayerCharacter::ShootRPC_Implementation(APlayerCharacter* damagedPlayer, int damage)
@@ -235,6 +248,17 @@ void APlayerCharacter::ShootMulticast_Implementation(APlayerCharacter* damagedPl
 	}
 }
 
+void APlayerCharacter::PlayShootAnimServer_Implementation()
+{
+	//PlayerWeapon->PlayShootAnim();
+	PlayShootAnimMulticast(this);
+}
+
+void APlayerCharacter::PlayShootAnimMulticast_Implementation(APlayerCharacter* playerToAnim)
+{
+	playerToAnim->PlayerWeapon->PlayShootAnim();
+}
+
 void APlayerCharacter::Reload(const FInputActionValue& inputValue)
 {
 	ReloadRPC();
@@ -254,8 +278,6 @@ void APlayerCharacter::ClientReload_Implementation()
 void APlayerCharacter::Sprint(const FInputActionValue& InputValue)
 {
 	bIsSprinting = InputValue.Get<bool>();
-	
-
 	SprintRPC_Implementation(bIsSprinting);
 }
 
@@ -306,14 +328,6 @@ void APlayerCharacter::KillPlayer()
 	GetMesh()->SetSimulatePhysics(true);
 	DisableInput(GetLocalViewingPlayerController());
 	HealthWidget->SetVisibility(false);
-	if(AGS_MultiplayerState* state = Cast<AGS_MultiplayerState>(GetWorld()->GetGameState()))
-	{
-		state->RespawnPlayer(this);
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Wrong state: %s"), *GetWorld()->GetGameState()->GetName());
-	}
 }
 
 void APlayerCharacter::CheckIfPlayerDeadMulticast_Implementation(APlayerCharacter* damagedPlayer)
@@ -332,6 +346,19 @@ void APlayerCharacter::CheckIfPlayerDeadServer_Implementation(APlayerCharacter* 
  	{
  		UE_LOG(LogTemp, Warning, TEXT("%s is dead"), *damagedPlayer->GetName());
  		damagedPlayer->KillPlayer();
+		if(AMultiplayerGameMode* gameMode = Cast<AMultiplayerGameMode>(GetWorld()->GetAuthGameMode()))
+		{
+ 			UE_LOG(LogTemp, Warning, TEXT("Attempting Respawn: PlayerCharacter.cpp"));
+			if(IsValid(damagedPlayer->GetController()))
+			{
+				gameMode->RespawnPlayer(damagedPlayer->GetController());
+				damagedPlayer->GetController()->UnPossess();
+			}
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Wrong gamemode"));
+		}
  	}
 	CheckIfPlayerDeadMulticast(damagedPlayer);
 }
@@ -346,9 +373,4 @@ void APlayerCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 	DOREPLIFETIME(APlayerCharacter, DamageComponent);
 	DOREPLIFETIME(APlayerCharacter, LookPitch);
 	DOREPLIFETIME(APlayerCharacter, HealthWidget);
-}
-
-void APlayerCharacter::TestMulticast_Implementation()
-{
-	UE_LOG(LogTemp, Warning, TEXT("Multicast from cpp"));
 }

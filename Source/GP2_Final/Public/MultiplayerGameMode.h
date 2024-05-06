@@ -15,5 +15,5 @@ class GP2_FINAL_API AMultiplayerGameMode : public AGameModeBase
 {
 	GENERATED_BODY()
 public:
-	UFUNCTION(NetMulticast, Reliable) void DamagePlayer(APlayerCharacter* playerToDamage, int damage);
+	UFUNCTION(BlueprintImplementableEvent) void RespawnPlayer(AController* playerController);
 };

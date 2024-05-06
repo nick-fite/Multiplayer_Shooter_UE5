@@ -42,13 +42,14 @@ public:
 	UFUNCTION(BlueprintCallable) int GetCurrentAmmo(){ return Ammo; }
 	UFUNCTION(BlueprintCallable) int GetDefaultAmmo() { return DefaultAmmo; }
 	UFUNCTION() int GetDamage() const { return Damage; }
+	UFUNCTION() void PlayShootAnim();
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	
 	UPROPERTY(EditAnywhere) UNiagaraComponent* Emitter;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite) USkeletalMeshComponent* SkeletalMesh;
 	UPROPERTY(EditAnywhere, Replicated,Category="Animations") UAnimMontage* PlayerReloadAnim;
-private:	
+private:
 	UPROPERTY(EditAnywhere) APlayerCharacter* Player;
 	UPROPERTY(EditAnywhere,Replicated, Category="Animations") UAnimMontage* PlayerShootAnim;
 	UPROPERTY(EditAnywhere, Replicated,Category="Animations") UAnimMontage* WeaponShootAnim;

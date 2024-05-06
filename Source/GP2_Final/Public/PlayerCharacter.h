@@ -56,6 +56,8 @@ private:
 	UFUNCTION(Client, Reliable) void Shoot(const FInputActionValue& InputValue);
 	UFUNCTION(Server, Reliable) void ShootRPC(APlayerCharacter* damagedPlayer, int damage);
 	UFUNCTION(NetMulticast, Reliable) void ShootMulticast(APlayerCharacter* damagedPlayer, int damage);
+	UFUNCTION(Server, Reliable) void PlayShootAnimServer();
+	UFUNCTION(NetMulticast, Reliable) void PlayShootAnimMulticast(APlayerCharacter* playerToAnim);
 	UFUNCTION() void Reload(const FInputActionValue& inputValue);
 	UFUNCTION(Server, Reliable) void ReloadRPC();
 	UFUNCTION(NetMulticast, Reliable) void ClientReload();
@@ -88,7 +90,10 @@ private:
 	UPROPERTY(EditAnywhere, Category="Weapon") TSubclassOf<UCrosshair> CrosshairToSpawn;
 	UPROPERTY(EditAnywhere, Category="Weapon") UCrosshair* SpawnedCrosshair;
 
-	UPROPERTY(EditAnywhere,Replicated ,Category="Widgets") UWidgetComponent* HealthWidget;	
+	UPROPERTY(EditAnywhere,Replicated ,Category="Widgets") UWidgetComponent* HealthWidget;
+
+	UPROPERTY(EditAnywhere, Category="ADS") float DefaultFOV{90.f};
+	UPROPERTY(EditAnywhere, Category="ADS") float ADS_FOV{45.f};
 
 public:
 	
@@ -111,6 +116,4 @@ public:
 	UFUNCTION(Server, Reliable) void CheckIfPlayerDeadServer(APlayerCharacter* damagedPlayer);
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-
-	UFUNCTION(NetMulticast, Reliable) void TestMulticast();
 };
