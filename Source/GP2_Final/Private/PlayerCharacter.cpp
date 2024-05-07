@@ -104,15 +104,11 @@ void APlayerCharacter::BeginPlay()
 	bUseControllerRotationYaw = true;
 
 	if(UPlayerHealthBar* HealthBar = Cast<UPlayerHealthBar>(HealthWidget->GetWidget()))
-    	{
-			if(const UMultiplayerGameInstance* gameInstance = Cast<UMultiplayerGameInstance>(GetGameInstance()))
-			{
-				HealthBar->Name = FText::FromString(gameInstance->PlayerName);
-			}
-			HealthBar->CurrentHealth = DamageComponent->GetHealth();
-			HealthBar->DefaultHealth = DamageComponent->GetDefaultHealth();
-    		HealthBar->SetDefaults();
-    	}
+	{
+		HealthBar->CurrentHealth = DamageComponent->GetHealth();
+		HealthBar->DefaultHealth = DamageComponent->GetDefaultHealth();
+		HealthBar->SetDefaults();
+	}
 }
 
 // Called every frame
@@ -215,7 +211,7 @@ void APlayerCharacter::Shoot_Implementation(const FInputActionValue& InputValue)
 	//Now weapon is used to get player that was hit, and then we replicate here.
 	//PlayerWeapon->PlayShootAnim();
 
-	if(!PlayerWeapon->SkeletalMesh->GetAnimInstance()->Montage_IsPlaying(nullptr) && PlayerWeapon->GetCurrentAmmo() > 0)
+	if(!PlayerWeapon->SkeletalMesh->GetAnimInstance()->Montage_IsPlaying(nullptr) && PlayerWeapon->GetCurrentAmmo() > 0 && !bIsSprinting)
 	{
 		PlayShootAnimServer();
 		APlayerCharacter* hitplayer = PlayerWeapon->Shoot();
@@ -323,6 +319,16 @@ void APlayerCharacter::PrintWasHit_Implementation()
 	UE_LOG(LogTemp, Warning, TEXT("%s was hit"), *this->GetName());
 }
 
+void APlayerCharacter::PlayName_OnRep(const FString& NewName)
+{
+	PlayerName = NewName;
+	if(UPlayerHealthBar* widget = Cast<UPlayerHealthBar>(HealthWidget))
+	{
+		widget->Name = FText::FromString(NewName);
+		widget->SetDefaults();
+	}
+}
+
 void APlayerCharacter::KillPlayer()
 {
 	GetMesh()->SetSimulatePhysics(true);
@@ -352,7 +358,6 @@ void APlayerCharacter::CheckIfPlayerDeadServer_Implementation(APlayerCharacter* 
 			if(IsValid(damagedPlayer->GetController()))
 			{
 				gameMode->RespawnPlayer(damagedPlayer->GetController());
-				damagedPlayer->GetController()->UnPossess();
 			}
 		}
 		else
@@ -361,6 +366,25 @@ void APlayerCharacter::CheckIfPlayerDeadServer_Implementation(APlayerCharacter* 
 		}
  	}
 	CheckIfPlayerDeadMulticast(damagedPlayer);
+}
+
+void APlayerCharacter::SetNameServer_Implementation(const FString& Name)
+{
+	if(UPlayerHealthBar* widget = Cast<UPlayerHealthBar>(HealthWidget))
+	{
+		PlayerName = Name;
+		widget->Name = FText::FromString(Name);
+	}
+}
+
+void APlayerCharacter::SetNameClient_Implementation(const FString& Name)
+{
+	if(UPlayerHealthBar* widget = Cast<UPlayerHealthBar>(HealthWidget))
+ 	{
+		PlayerName = Name;
+ 		widget->Name = FText::FromString(PlayerName);
+		SetNameServer(PlayerName);
+ 	}
 }
 
 void APlayerCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -373,4 +397,5 @@ void APlayerCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 	DOREPLIFETIME(APlayerCharacter, DamageComponent);
 	DOREPLIFETIME(APlayerCharacter, LookPitch);
 	DOREPLIFETIME(APlayerCharacter, HealthWidget);
+	DOREPLIFETIME(APlayerCharacter, PlayerName);
 }

@@ -48,11 +48,11 @@ APlayerCharacter* AWeapon::Shoot()
 			playerController->DeprojectScreenPositionToWorld(viewportX * 0.5f, viewportY * 0.5f, worldLoc, worldDir);
 
 			worldLoc += worldDir * 100.0;
-			FVector endPos = worldLoc + worldDir * 999.f;
+			FVector endPos = worldLoc + worldDir * 999999.f;
 
 			FHitResult hit;
 			GetWorld()->LineTraceSingleByChannel(hit, worldLoc, endPos, ECC_WorldDynamic);
-			DrawDebugLine(GetWorld(), SkeletalMesh->GetComponentLocation(), endPos, FColor::Green, true);
+			//DrawDebugLine(GetWorld(), SkeletalMesh->GetComponentLocation(), endPos, FColor::Green, true);
 			
 			if(APlayerCharacter* player = Cast<APlayerCharacter>(hit.GetActor()))
 			{

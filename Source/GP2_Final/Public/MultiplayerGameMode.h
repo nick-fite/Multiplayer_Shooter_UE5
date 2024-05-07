@@ -15,5 +15,6 @@ class GP2_FINAL_API AMultiplayerGameMode : public AGameModeBase
 {
 	GENERATED_BODY()
 public:
-	UFUNCTION(BlueprintImplementableEvent) void RespawnPlayer(AController* playerController);
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable) void RespawnPlayer(AController* playerController);
+	
 };

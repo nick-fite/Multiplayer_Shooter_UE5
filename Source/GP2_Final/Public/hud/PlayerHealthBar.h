@@ -14,11 +14,12 @@ class GP2_FINAL_API UPlayerHealthBar : public UUserWidget
 {
 	GENERATED_BODY()
 public:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite) int DefaultHealth;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite) int CurrentHealth;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite) FText Name;
+	UPROPERTY(EditAnywhere, Replicated, BlueprintReadWrite) int DefaultHealth;
+	UPROPERTY(EditAnywhere, Replicated, BlueprintReadWrite) int CurrentHealth;
+	UPROPERTY(EditAnywhere, Replicated, BlueprintReadWrite) FText Name;
 	
-	UFUNCTION(BlueprintImplementableEvent) void SetDefaults();
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable) void SetDefaults();
 	UFUNCTION(BlueprintImplementableEvent) void ChangeHealth();
-	
+
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 };

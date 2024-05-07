@@ -90,8 +90,6 @@ private:
 	UPROPERTY(EditAnywhere, Category="Weapon") TSubclassOf<UCrosshair> CrosshairToSpawn;
 	UPROPERTY(EditAnywhere, Category="Weapon") UCrosshair* SpawnedCrosshair;
 
-	UPROPERTY(EditAnywhere,Replicated ,Category="Widgets") UWidgetComponent* HealthWidget;
-
 	UPROPERTY(EditAnywhere, Category="ADS") float DefaultFOV{90.f};
 	UPROPERTY(EditAnywhere, Category="ADS") float ADS_FOV{45.f};
 
@@ -108,6 +106,12 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Weapon") AWeapon* PlayerWeapon;
 
 	UPROPERTY() FSetHudDelegate SetHudDelegate;
+
+	UPROPERTY(EditAnywhere, Replicated, BlueprintReadWrite,Category="Widgets") UWidgetComponent* HealthWidget;
+
+	UPROPERTY(EditAnywhere, ReplicatedUsing=PlayName_OnRep) FString PlayerName;
+
+	UFUNCTION() void PlayName_OnRep(const FString& NewName);
 	
 	UFUNCTION(NetMulticast, Reliable) void PrintWasHit();
 
@@ -115,5 +119,9 @@ public:
 	UFUNCTION(NetMulticast, Reliable) void CheckIfPlayerDeadMulticast(APlayerCharacter* damagedPlayer);
 	UFUNCTION(Server, Reliable) void CheckIfPlayerDeadServer(APlayerCharacter* damagedPlayer);
 
+	UFUNCTION(Client, Reliable) void SetNameClient(const FString& Name);
+	UFUNCTION(Server, Reliable) void SetNameServer(const FString& Name);
+	//UFUNCTION(NetMulticast, Reliable) void SetNameNetMulticast(const FString& Name);
+	
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 };
