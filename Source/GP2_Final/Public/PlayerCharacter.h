@@ -65,6 +65,7 @@ private:
 	UFUNCTION(Server, Reliable) void SprintRPC(const bool newVal);
 	UFUNCTION(NetMulticast, Reliable) void ClientSprint(const bool newVal);
 	virtual void Jump() override;
+	UFUNCTION(Server, Reliable) void JumpServerRPC();
 
 	//camera
 	UPROPERTY(VisibleAnywhere, Category="View") USpringArmComponent* CameraBoom;

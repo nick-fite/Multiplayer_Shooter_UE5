@@ -281,6 +281,12 @@ void APlayerCharacter::Jump()
 {
 	Super::Jump();
 	GetMesh()->GetAnimInstance()->Montage_Play(JumpMontage);
+	JumpServerRPC_Implementation();
+}
+
+void APlayerCharacter::JumpServerRPC_Implementation()
+{
+	GetMesh()->GetAnimInstance()->Montage_Play(JumpMontage);
 }
 
 void APlayerCharacter::ClientSprint_Implementation(const bool newVal)
