@@ -48,9 +48,9 @@ public:
 	
 	UPROPERTY(EditAnywhere) UNiagaraComponent* Emitter;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite) USkeletalMeshComponent* SkeletalMesh;
-	UPROPERTY(EditAnywhere, Replicated,Category="Animations") UAnimMontage* PlayerReloadAnim;
 private:
 	UPROPERTY(EditAnywhere) APlayerCharacter* Player;
+	UPROPERTY(EditAnywhere, Replicated,Category="Animations") UAnimMontage* PlayerReloadAnim;
 	UPROPERTY(EditAnywhere,Replicated, Category="Animations") UAnimMontage* PlayerShootAnim;
 	UPROPERTY(EditAnywhere, Replicated,Category="Animations") UAnimMontage* WeaponShootAnim;
 	UPROPERTY(EditAnywhere, Replicated,Category="Animations") UAnimMontage* WeaponReloadAnim;
