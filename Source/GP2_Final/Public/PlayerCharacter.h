@@ -42,6 +42,8 @@ public:
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	
+	UFUNCTION(BlueprintCallable) FString GetPlayerName();
 
 private:
 	UFUNCTION() void Move(const FInputActionValue& InputValue);
@@ -66,6 +68,7 @@ private:
 	UFUNCTION(NetMulticast, Reliable) void ClientSprint(const bool newVal);
 	virtual void Jump() override;
 	UFUNCTION(Server, Reliable) void JumpServerRPC();
+	UFUNCTION(NetMulticast, Reliable) void JumpMulticastRPC();
 
 	//camera
 	UPROPERTY(VisibleAnywhere, Category="View") USpringArmComponent* CameraBoom;

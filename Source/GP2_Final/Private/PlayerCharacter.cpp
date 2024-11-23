@@ -135,6 +135,11 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	}
 }
 
+FString APlayerCharacter::GetPlayerName()
+{
+	return PlayerName;
+}
+
 void APlayerCharacter::Move(const FInputActionValue& InputValue)
 {
 	FVector2D input = InputValue.Get<FVector2D>();
@@ -281,10 +286,16 @@ void APlayerCharacter::Jump()
 {
 	Super::Jump();
 	GetMesh()->GetAnimInstance()->Montage_Play(JumpMontage);
-	JumpServerRPC_Implementation();
+	JumpServerRPC();
 }
 
 void APlayerCharacter::JumpServerRPC_Implementation()
+{
+	JumpMulticastRPC();
+	GetMesh()->GetAnimInstance()->Montage_Play(JumpMontage);
+}
+
+void APlayerCharacter::JumpMulticastRPC_Implementation()
 {
 	GetMesh()->GetAnimInstance()->Montage_Play(JumpMontage);
 }
